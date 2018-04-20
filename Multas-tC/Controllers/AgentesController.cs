@@ -9,65 +9,85 @@ using System.Web;
 using System.Web.Mvc;
 using Multas_tC.Models;
 
-namespace Multas_tC.Controllers {
-   public class AgentesController : Controller {
+namespace Multas_tC.Controllers
+{
+    public class AgentesController : Controller
+    {
 
-      //cria um objeto privado que 'referencia' a BD
-      private MultasDb db = new MultasDb();
+        //cria um objeto privado que 'referencia' a BD
+        private MultasDb db = new MultasDb();
 
-      // GET: Agentes
-      public ActionResult Index() {
+        // GET: Agentes
+        public ActionResult Index()
+        {
 
-         // (LINQ) db.Agentes.ToList() --> em SQL: SELECT * FROM Agentes 
-         // lista de agentes, presentes na BD
-         return View(db.Agentes.ToList());
-      }
+            // (LINQ) db.Agentes.ToList() --> em SQL: SELECT * FROM Agentes 
+            // lista de agentes, presentes na BD
+            return View(db.Agentes.ToList());
+        }
 
-      // GET: Agentes/Details/5
-      /// <summary>
-      /// Apresenta numa listagem os dados de um agente
-      /// </summary>
-      /// <param name="id"> identifica o nº do agente a pesquisar </param>
-      /// <returns></returns>
-      public ActionResult Details(int? id) {
+        // GET: Agentes/Details/5
+        /// <summary>
+        /// Apresenta numa listagem os dados de um agente
+        /// </summary>
+        /// <param name="id"> identifica o nº do agente a pesquisar </param>
+        /// <returns></returns>
+        public ActionResult Details(int? id)
+        {
 
-         // int? id  ---> o '?' informa que o parâmetro é de preenchimento
-         //               facultativo
+            // int? id  ---> o '?' informa que o parâmetro é de preenchimento
+            //               facultativo
 
-         // caso não haja ID, nada é feito
-         if(id == null) {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-         }
+            // caso não haja ID, nada é feito
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
 
-         // pesquisa os dados do Agente, cujo ID foi fornecido 
-         Agentes agentes = db.Agentes.Find(id);
+            // pesquisa os dados do Agente, cujo ID foi fornecido 
+            Agentes agentes = db.Agentes.Find(id);
 
-         // valida se foi encontrado algum Agente
-         // se não foi encontrado, nada faz
-         if(agentes == null) {
-            return HttpNotFound();
-         }
+            // valida se foi encontrado algum Agente
+            // se não foi encontrado, nada faz
+            if (agentes == null)
+            {
+                return HttpNotFound();
+            }
 
-         // apresenta na View os dados do Agente
-         return View(agentes);
-      }
+            // apresenta na View os dados do Agente
+            return View(agentes);
+        }
 
-      // GET: Agentes/Create
-      public ActionResult Create() {
-         return View();
-      }
+        // GET: Agentes/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
 
         // POST: Agentes/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Nome, Fotografia, Esquadra")] Agentes agente, HttpPostedFileBase carregaFotografia) {
+        public ActionResult Create([Bind(Include = "Nome, Esquadra")] Agentes agente, HttpPostedFileBase carregaFotografia)
+        {
 
             //gerar o ID do novo agente
             int novoID = 0;
-            novoID = db.Agentes.Max(a => a.ID) + 1;
+            if (db.Agentes.Count() != 0)
+            {
+                novoID = db.Agentes.Max(a => a.ID) + 1;
+            }
+            else
+            {
+                novoID = 1;
+            }
             agente.ID = novoID; //atribuir o ID deste Agente
+            //**************************************************************************
+            //outra hipótese de validar a atribuição de ID
+            //try { }
+            //catch (Exception) { }
+            //**************************************************************************
             //var auxiliar
             string nomeFicheiro = "Agente_" + novoID + ".jpg";
             string caminho = "";
@@ -86,8 +106,8 @@ namespace Multas_tC.Controllers {
 
                 //redireccionar o utilizador para a View, para que ele corrija os dados
                 return View(agente);
-            }
-        }
+    }
+}
             //escolher o nome da imagem
 
             //formatar o tamanho da imagem ---> fazer em casa 
@@ -99,6 +119,7 @@ namespace Multas_tC.Controllers {
             // como o modelo, para verificar se 
             // o que recebeu é o que deveria ter sido recebido
             if (ModelState.IsValid) {
+    try{
             // adiciona o Agente à estrutura de dados
             db.Agentes.Add(agente);
             // efetuam um COMMIT à BD
@@ -107,6 +128,10 @@ namespace Multas_tC.Controllers {
             carregaFotografia.SaveAS(caminho);
             // redireciona o utilizador para a página do início
             return RedirectToAction("Index");
+}
+catch(Exception){
+    ModelState.AddModelError("", "");
+    }
          }
 
          // se aqui cheguei, é pq alguma coisa correu mal...
@@ -115,63 +140,74 @@ namespace Multas_tC.Controllers {
       }
 
       // GET: Agentes/Edit/5
-      public ActionResult Edit(int? id) {
-         if(id == null) {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-         }
-         Agentes agentes = db.Agentes.Find(id);
-         if(agentes == null) {
-            return HttpNotFound();
-         }
-         return View(agentes);
-      }
+      public ActionResult Edit(int? id)
+{
+    if (id == null)
+    {
+        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+    }
+    Agentes agentes = db.Agentes.Find(id);
+    if (agentes == null)
+    {
+        return HttpNotFound();
+    }
+    return View(agentes);
+}
 
-      // POST: Agentes/Edit/5
-      // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-      // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-      [HttpPost]
-      [ValidateAntiForgeryToken]
-      public ActionResult Edit([Bind(Include = "ID,Nome,Fotografia,Esquadra")] Agentes agentes) {
+// POST: Agentes/Edit/5
+// To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+// more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+[HttpPost]
+[ValidateAntiForgeryToken]
+public ActionResult Edit([Bind(Include = "ID,Nome,Fotografia,Esquadra")] Agentes agentes)
+{
 
-         if(ModelState.IsValid) {
-            // update
-            db.Entry(agentes).State = EntityState.Modified;
-            // COMMIT
-            db.SaveChanges();
+    if (ModelState.IsValid)
+    {
+        // update
+        db.Entry(agentes).State = EntityState.Modified;
+        // COMMIT
+        db.SaveChanges();
 
-            return RedirectToAction("Index");
-         }
-         return View(agentes);
-      }
+        return RedirectToAction("Index");
+    }
+    return View(agentes);
+}
 
-      // GET: Agentes/Delete/5
-      public ActionResult Delete(int? id) {
-         if(id == null) {
-            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-         }
-         Agentes agentes = db.Agentes.Find(id);
-         if(agentes == null) {
-            return HttpNotFound();
-         }
-         return View(agentes);
-      }
+// GET: Agentes/Delete/5
+public ActionResult Delete(int? id)
+{
+    if (id == null)
+    {
+        return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+    }
+    Agentes agentes = db.Agentes.Find(id);
+    if (agentes == null)
+    {
+        return HttpNotFound();
+    }
+    return View(agentes);
+}
 
-      // POST: Agentes/Delete/5
-      [HttpPost, ActionName("Delete")]
-      [ValidateAntiForgeryToken]
-      public ActionResult DeleteNewMethod(int id) {
-         Agentes agentes = db.Agentes.Find(id);
-         db.Agentes.Remove(agentes);
+// POST: Agentes/Delete/5
+[HttpPost, ActionName("Delete")]
+[ValidateAntiForgeryToken]
+public ActionResult DeleteNewMethod(int id)
+{
+    Agentes agentes = db.Agentes.Find(id);
+    db.Agentes.Remove(agentes);
 
-         db.SaveChanges();
-         return RedirectToAction("Index");
-      }
+    db.SaveChanges();
+    return RedirectToAction("Index");
+}
 
-      protected override void Dispose(bool disposing) {
-         if(disposing) {
-            db.Dispose();
-         }
-         base.Dispose(disposing);
-      }
+protected override void Dispose(bool disposing)
+{
+    if (disposing)
+    {
+        db.Dispose();
+    }
+    base.Dispose(disposing);
+}
    }
 }
