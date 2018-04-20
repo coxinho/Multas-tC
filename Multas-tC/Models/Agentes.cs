@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Web;
 
@@ -12,8 +13,9 @@ namespace Multas_tC.Models {
          ListaMultas = new HashSet<Multas>();
       }
 
-      [Key]
-      public int ID { get; set; } // chave primária
+      [Key]// chave primária
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]//inibe a opção Automática
+        public int ID { get; set; } 
 
       // dados do Agente
       [Required(ErrorMessage ="O {0} é de preenchimento obrigatório")]
@@ -22,7 +24,7 @@ namespace Multas_tC.Models {
       [StringLength(40,ErrorMessage ="o {0} só aceita {1} carateres.")]
       public string Nome { get; set; }
 
-      [Required(ErrorMessage = "A {0} é de preenchimento obrigatório")]
+      //[Required(ErrorMessage = "A {0} é de preenchimento obrigatório")]
       public string Fotografia { get; set; }
 
       // local de trabalho do Agente

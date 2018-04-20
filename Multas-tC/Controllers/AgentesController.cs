@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -56,21 +57,37 @@ namespace Multas_tC.Controllers {
          return View();
       }
 
-      // POST: Agentes/Create
-      // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-      // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-      [HttpPost]
-      [ValidateAntiForgeryToken]
-      public ActionResult Create([Bind(Include = "Nome,Fotografia,Esquadra")] Agentes agente, HttpPostedFileBase carregaFotografia) {
+        // POST: Agentes/Create
+        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
+        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Create([Bind(Include = "Nome, Fotografia, Esquadra")] Agentes agente, HttpPostedFileBase carregaFotografia) {
 
+            //gerar o ID do novo agente
+            int novoID = 0;
+            novoID = db.Agentes.Max(a => a.ID) + 1;
+            agente.ID = novoID; //atribuir o ID deste Agente
+            //var auxiliar
+            string nomeFicheiro = "Agente_" + novoID + ".jpg";
+            string caminho = "";
             //primeiro que tudo tem que se garantir que a imagem existe
             if (carregaFotografia != null)
-            { 
                 //a imagem existe
-                else{
-                    //a imagem não existe
-                }
+                agente.Fotografia = nomeFicheiro;
+            //definir o nome do ficheiro e o seu caminho
+            caminho = Path.Combine(Server.MapPath("~/imagens/"), nomeFicheiro);
+        }
+
+            else {
+                //não foi submetida uma imagem
+                //gerar mensagem de erro, para elucidar o utilizador do erro
+                ModelState.AddModelError("", "Não foi inserida uma imagem.");
+
+                //redireccionar o utilizador para a View, para que ele corrija os dados
+                return View(agente);
             }
+        }
             //escolher o nome da imagem
 
             //formatar o tamanho da imagem ---> fazer em casa 
@@ -86,7 +103,8 @@ namespace Multas_tC.Controllers {
             db.Agentes.Add(agente);
             // efetuam um COMMIT à BD
             db.SaveChanges();
-
+            //guardar os dados do ficheiro no disco rígido
+            carregaFotografia.SaveAS(caminho);
             // redireciona o utilizador para a página do início
             return RedirectToAction("Index");
          }
