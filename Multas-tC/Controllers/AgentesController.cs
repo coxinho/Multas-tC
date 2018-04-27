@@ -24,6 +24,8 @@ namespace Multas_tC.Controllers
             // (LINQ) db.Agentes.ToList() --> em SQL: SELECT * FROM Agentes 
             // lista de agentes, presentes na BD
 
+            var listaAgentes = db.Agentes.ToList().OrderBy(a => a.Nome);
+
             return View(db.Agentes.ToList());
         }
 
@@ -73,8 +75,12 @@ namespace Multas_tC.Controllers
         public ActionResult Create([Bind(Include = "Nome, Esquadra")] Agentes agente, HttpPostedFileBase carregaFotografia)
         {
 
-            //gerar o ID do novo agente
-            int novoID = 0;
+            // determinar o ID do novo Agente
+             int novoID = 0;
+            // *****************************************
+            // proteger a geração de um novo ID
+            // *****************************************
+            // determinar o nº de Agentes na tabela
             if (db.Agentes.Count() != 0)
             {
                 novoID = db.Agentes.Max(a => a.ID) + 1;
@@ -83,7 +89,8 @@ namespace Multas_tC.Controllers
             {
                 novoID = 1;
             }
-            agente.ID = novoID; //atribuir o ID deste Agente
+            // atribuir o ID ao novo agente
+            agente.ID = novoID;
             //**************************************************************************
             //outra hipótese de validar a atribuição de ID
             //try { }
