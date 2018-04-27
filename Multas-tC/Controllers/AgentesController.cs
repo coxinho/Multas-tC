@@ -21,13 +21,15 @@ namespace Multas_tC.Controllers
         public ActionResult Index()
         {
 
-            // (LINQ) db.Agentes.ToList() --> em SQL: SELECT * FROM Agentes 
+            // (LINQ) db.Agentes.ToList() --> 
+            // em SQL: SELECT * FROM Agentes ORDER BY Nome
             // lista de agentes, presentes na BD
 
             var listaAgentes = db.Agentes.ToList().OrderBy(a => a.Nome);
 
-            return View(db.Agentes.ToList());
+            return View(listaAgentes);
         }
+
 
         // GET: Agentes/Details/5
         /// <summary>
@@ -44,7 +46,8 @@ namespace Multas_tC.Controllers
             // caso não haja ID, nada é feito
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                // return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Index");
             }
 
             // pesquisa os dados do Agente, cujo ID foi fornecido 
@@ -54,7 +57,8 @@ namespace Multas_tC.Controllers
             // se não foi encontrado, nada faz
             if (agentes == null)
             {
-                return HttpNotFound();
+                // return HttpNotFound();
+                return RedirectToAction("Index");
             }
 
             // apresenta na View os dados do Agente
@@ -72,15 +76,11 @@ namespace Multas_tC.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Nome, Esquadra")] Agentes agente, HttpPostedFileBase carregaFotografia)
+        public ActionResult Create([Bind(Include = "Nome,Esquadra")] Agentes agente,
+                                    HttpPostedFileBase carregaFotografia)
         {
-
-            // determinar o ID do novo Agente
-             int novoID = 0;
-            // *****************************************
-            // proteger a geração de um novo ID
-            // *****************************************
-            // determinar o nº de Agentes na tabela
+            // gerar o ID do novo Agente
+            int novoID = 0;
             if (db.Agentes.Count() != 0)
             {
                 novoID = db.Agentes.Max(a => a.ID) + 1;
@@ -89,41 +89,38 @@ namespace Multas_tC.Controllers
             {
                 novoID = 1;
             }
-            // atribuir o ID ao novo agente
-            agente.ID = novoID;
-            //**************************************************************************
-            //outra hipótese de validar a atribuição de ID
-            //try { }
-            //catch (Exception) { }
-            //**************************************************************************
-            //var auxiliar
+            agente.ID = novoID; // atribuir o ID deste Agente
+                                // **************************************************
+                                // outra hipótese de validar a atribuição de ID
+                                // try { }
+                                // catch(Exception) { }
+                                // **************************************************
+
+            // var auxiliar
             string nomeFicheiro = "Agente_" + novoID + ".jpg";
             string caminho = "";
-            //primeiro que tudo tem que se garantir que a imagem existe
+
+            /// primeiro q tudo, há que garantir q existe imagem
             if (carregaFotografia != null)
             {
-                //a imagem existe
+                // a imagem existe
                 agente.Fotografia = nomeFicheiro;
-                //definir o nome do ficheiro e o seu caminho
+                // definir o nome do ficheiro e o seu caminho
                 caminho = Path.Combine(Server.MapPath("~/imagens/"), nomeFicheiro);
             }
-
             else
             {
-                //não foi submetida uma imagem
-                //gerar mensagem de erro, para elucidar o utilizador do erro
+                // não foi submetida uma imagem
+
+                // gerar mensagem de erro, para elucidar o utilizador do erro
                 ModelState.AddModelError("", "Não foi inserida uma imagem.");
 
-                //redireccionar o utilizador para a View, para que ele corrija os dados
+                // redirecionar o utilizador para a View,
+                // para que ele corriga os dados
                 return View(agente);
             }
-
-            //escolher o nome da imagem
-
-            //formatar o tamanho da imagem ---> fazer em casa 
-            //será que o ficheiro é uma imagem? ---> fazer em casa
-            //guardar a imagem no disco rígido do servidor
-
+            /// formatar o tamanho da imagem ---> fazer em casa
+            /// será q o ficheiro é uma imagem? ---> fazer em casa
 
             // ModelState.IsValid --> confronta os dados recebidos
             // como o modelo, para verificar se 
@@ -136,14 +133,15 @@ namespace Multas_tC.Controllers
                     db.Agentes.Add(agente);
                     // efetuam um COMMIT à BD
                     db.SaveChanges();
-                    //guardar os dados do ficheiro no disco rígido
+                    // guardar o ficheio no disco rígido
                     carregaFotografia.SaveAs(caminho);
+
                     // redireciona o utilizador para a página do início
                     return RedirectToAction("Index");
                 }
                 catch (Exception)
                 {
-                    ModelState.AddModelError("", "");
+                    ModelState.AddModelError("", "Ocorreu um erro na criação do Agente '" + agente.Nome + "'.");
                 }
             }
 
@@ -157,12 +155,14 @@ namespace Multas_tC.Controllers
         {
             if (id == null)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                // return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                return RedirectToAction("Index");
             }
             Agentes agentes = db.Agentes.Find(id);
             if (agentes == null)
             {
-                return HttpNotFound();
+                // return HttpNotFound();
+                return RedirectToAction("Index");
             }
             return View(agentes);
         }
@@ -193,36 +193,39 @@ namespace Multas_tC.Controllers
             if (id == null)
             {
                 // return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-                return RedirectToAction("Index"); //redirecciona para a página de delete
+                return RedirectToAction("Index"); // redireciona para a página de início
             }
             Agentes agentes = db.Agentes.Find(id);
+
             if (agentes == null)
             {
-                //return HttpNotFound();
+                // return HttpNotFound();
                 return RedirectToAction("Index");
             }
             return View(agentes);
         }
+
+
 
         // POST: Agentes/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public ActionResult DeleteNewMethod(int id)
         {
-            Agentes agentes = db.Agentes.Find(id);
+            Agentes agente = db.Agentes.Find(id);
+
             try
             {
-                db.Agentes.Remove(agentes);
-
+                db.Agentes.Remove(agente);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
             catch (Exception)
             {
-                ModelState.AddModelError("", string.Format("aconteceu um erro com a eliminação do Agente '{0}', porque há multas associadas a ele.", agentes.Nome));
+                ModelState.AddModelError("", string.Format("aconteceu um erro com a eliminação do Agente '{0}', porque há multas associadas a ele.", agente.Nome));
             }
-            //se aqui chego, é porque alguma coisa correu mal
-            return View(agentes);
+            // se aqui chego, é pq alguma coisa correu mal
+            return View(agente);
         }
 
         protected override void Dispose(bool disposing)
