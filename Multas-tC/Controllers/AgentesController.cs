@@ -72,6 +72,8 @@ namespace Multas_tC.Controllers
         }
 
         // POST: Agentes/Create
+        // Para proteger contra ataques de overposting, ative as propriedades específicas que você deseja vincular, 
+        // para obter mais detalhes, consulte https://go.microsoft.com/fwlink/?LinkId=317598.
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
@@ -111,7 +113,6 @@ namespace Multas_tC.Controllers
             else
             {
                 // não foi submetida uma imagem
-
                 // gerar mensagem de erro, para elucidar o utilizador do erro
                 ModelState.AddModelError("", "Não foi inserida uma imagem.");
 
@@ -168,6 +169,8 @@ namespace Multas_tC.Controllers
         }
 
         // POST: Agentes/Edit/5
+        // Para proteger contra ataques de overposting, ative as propriedades específicas que você deseja vincular, 
+        // para obter mais detalhes, consulte https://go.microsoft.com/fwlink/?LinkId=317598.
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
@@ -204,8 +207,6 @@ namespace Multas_tC.Controllers
             }
             return View(agentes);
         }
-
-
 
         // POST: Agentes/Delete/5
         [HttpPost, ActionName("Delete")]
